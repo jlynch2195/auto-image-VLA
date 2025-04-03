@@ -236,14 +236,8 @@ measurement_set = config["measurement_set"]
 source_name = config["source"]
 band = config["band"]
 image_size = config["image_size"]
-
-# toggle manual spectral window use, in case removing certain frequencies is beneficial
-# if true, tclean will use manual_spws and the central_freq will be updated to the average of the spectral windows
 use_manual_spws = config["use_manual_spws"]
-manual_spws = config["manual_spws"] # keep something here even if use_manual_spws=False
-
-# toggle fit to a point source at location of source_name
-# if true, imfit and imstat will attempt a Gaussian fit in a circle centered at the source coordinates and print flux values in terminal
+manual_spws = config["manual_spws"]
 try_point_source = config["try_point_source"]
 
 
