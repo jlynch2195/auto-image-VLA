@@ -2,7 +2,9 @@
 
 Repository contains:
 1. auto-image.py: script to create an image from a single-frequency VLA observation
-2. auto-image-multifreq.py: script to create a set of images from a multi-frequency VLA observation
+2. (in progress) auto-image-multifreq.py: script to create a set of images from a multi-frequency VLA observation
+3. vla-configuration-schedule.csv: table from https://science.nrao.edu/facilities/vla/proposing/configpropdeadlines
+4. vla-resolution.csv: table from https://science.nrao.edu/facilities/vla/docs/manuals/oss/performance/resolution
 
 The workflow for the imaging scripts are as follows:
 1. User passes in path/to/measurement_set.ms, desired image size (default: 128 px), and any changes to CASA's tclean default values
