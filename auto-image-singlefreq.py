@@ -282,7 +282,7 @@ else:
            spw=spw_range, 
            specmode='mfs', 
            nterms=2, 
-           reffreq=central_freq,
+           reffreq=str(central_freq),
            deconvolver='mtmfs', 
            imsize=[image_size, image_size], 
            cell=[cell_size], 
