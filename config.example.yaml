@@ -3,7 +3,11 @@ source_name: "source"
 band: "C"
 image_size: 256
 
+# toggle manual spectral window use, in case removing certain frequencies is beneficial
+# if true, tclean will use manual_spws and the central_freq will be updated to the average of the spectral windows
 use_manual_spws: false
-manual_spws: "2~17"
+manual_spws: "2~17" # keep something here even if use_manual_spws=False
 
+# toggle fit to a point source at location of source_name
+# if true, imfit and imstat will attempt a Gaussian fit in a circle centered at the source coordinates and print flux values in terminal
 try_point_source: true
