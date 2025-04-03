@@ -1,0 +1,9 @@
+measurement_set: "path/to/measurement_set.ms"
+source_name: "source"
+band: "C"
+image_size: 256
+
+use_manual_spws: false
+manual_spws: "2~17"
+
+try_point_source: true
