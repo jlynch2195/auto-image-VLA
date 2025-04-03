@@ -2,8 +2,6 @@
 Jimmy Lynch
 University of Oregon, Department of Physics
 
-# did this work?
-
 Script to create an image from a single-frequency VLA observation using CASA's tclean method
 
 Running the script: 
@@ -287,6 +285,7 @@ else:
            spw=spw_range, 
            specmode='mfs', 
            nterms=2, 
+           reffreq=central_freq,
            deconvolver='mtmfs', 
            imsize=[image_size, image_size], 
            cell=[cell_size], 
