@@ -9,6 +9,7 @@ Running the script:
     (base) casa
     (CASA) <1>: execfile("auto-image-singlefreq.py")
 
+# Hello Owen, thanks for testing!
 
 User inputs are defined below in main section. Change these accordingly. 
 
