@@ -8,6 +8,7 @@ Scripts to make life easier when imaging calibrated measurement sets from the VL
 4. vla-resolution.csv: table from https://science.nrao.edu/facilities/vla/docs/manuals/oss/performance/resolution
 5. config.example.yaml: an example file where you should define your imaging parameters. For how to use it, see note below.
 6. .gitignore: ignore this
+7. requirements.txt: required packages, can be installed via pip install -r requirements.txt
 
 ## Workflow of auto-image-singlefreq.py
 1. User passes in path/to/measurement_set.ms, desired image size (default: 256 px), source name, VLA band, and any changes to CASA's tclean default values
@@ -16,7 +17,7 @@ Scripts to make life easier when imaging calibrated measurement sets from the VL
 4. (Optional) Using CASA's imfit and imstat tasks, script fits for a point source flux value and RMS in circle centered at source coords. If no point source is detected, it reports 3*RMS within the circle as the upper limit.
 
 ## Workflow of auto-image-multifreq.py
-(TODO): The multi-frequency script loops the single-frequency script to image several bands in one command. The user can specify if each band should be split into lower and upper spectral window bands, as is the case in our science. In the event that the imfit tasks finds non-detections in both lower and upper frequency windows for a single band, the script will re-image the measurement set for the full band to increase SNR.
+(TODO): The multi-frequency script loops the single-frequency script to image several bands in one command. The user can specify if each band should be split into lower and upper spectral windows, as is good practice if you have strong detections. In the event that the imfit tasks finds non-detections in both lower and upper frequency windows for a single band, the script will re-image the measurement set for the full band to increase SNR.
 
 ## Note on config.example.yaml
 The imaging scripts import user inputs through the config.yaml file. To avoid pushing my local changes to config.yaml and overriding the example I wanted to keep here, I created an example file called config.example.yaml. When cloning this repo, this file will of course come along, and you should make a copy and rename it config.yaml via 
