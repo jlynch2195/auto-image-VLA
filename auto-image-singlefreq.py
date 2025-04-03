@@ -2,14 +2,14 @@
 Jimmy Lynch
 University of Oregon, Department of Physics
 
-Script to create an image from a single-frequency VLA observation using CASA's tclean method
+Script to create an image from a single-frequency VLA observation using CASA's tclean method.
+User inputs are defined in config.yaml. Change these accordingly. 
+
 
 Running the script: 
     (base) cd place/where/this/code/lives
     (base) casa
     (CASA) <1>: execfile("auto-image-singlefreq.py")
-
-User inputs are defined below in main section. Change these accordingly. 
 
 The script proceeds in the following way:
     1. Creates and scrapes a listfile for information to tclean
