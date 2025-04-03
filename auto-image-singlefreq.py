@@ -34,6 +34,7 @@ import pandas as pd
 import shutil
 import sys
 import time
+import yaml
 
 from datetime import datetime
 
@@ -219,7 +220,7 @@ def fit_point_source(image_name, region):
 
 
 '''
-Define user inputs here: =======================================================================================================
+Import user inputs from config file here: =======================================================================================================
     measurement_set (str): path/to/measurement_set.ms
     source_name (str): name of source as defined by VLA observation
     band (str): VLA band, like "C"
@@ -228,20 +229,23 @@ Define user inputs here: =======================================================
 Note: if you want to change tclean parameters, scroll down to that command
 
 '''
-# basic inputs
-measurement_set = "path/to/measurement_set.ms"
-source_name = "source"
-band = "C"
-image_size = 256
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+measurement_set = config["measurement_set"]
+source_name = config["source"]
+band = config["band"]
+image_size = config["image_size"]
 
 # toggle manual spectral window use, in case removing certain frequencies is beneficial
 # if true, tclean will use manual_spws and the central_freq will be updated to the average of the spectral windows
-use_manual_spws = False
-manual_spws = "2~17" # keep something here even if use_manual_spws=False
+use_manual_spws = config["use_manual_spws"]
+manual_spws = config["manual_spws"] # keep something here even if use_manual_spws=False
 
 # toggle fit to a point source at location of source_name
 # if true, imfit and imstat will attempt a Gaussian fit in a circle centered at the source coordinates and print flux values in terminal
-try_point_source = True
+try_point_source = config["try_point_source"]
+
 
 '''
 Code executes below this comment block; no need to change ======================================================================
