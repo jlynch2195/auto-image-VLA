@@ -12,3 +12,10 @@ The workflow for the imaging scripts are as follows:
 3. (optionally) Using CASA's imfit and imstat tasks, fits for a point source flux value and RMS in circle centered at source coords. If no point source is detected, it reports 3*RMS within the circle as the upper limit.
 
 The multi-frequency script loops the single-frequency script to image several bands in one command. The user can specify if each band should be split into lower and upper spectral window bands, as is the case in our science. In the event that the imfit tasks finds non-detections in both lower and upper frequency windows for a single band, the script will re-image the measurement set for the full band to increase SNR.
+
+## Note on config.example.yaml
+The imaging scripts import user inputs through the config.yaml file. To avoid pushing my local changes to config.yaml and overriding the example I wanted to keep here, I created an example file called config.example.yaml. When cloning this repo, this file will of course come along, and you should make a copy and rename it config.yaml via 
+
+  cp config.example.yaml config.yaml
+
+Then edit the config.yaml file with your inputs. The imaging script does not look for your inputs in config.example.yaml!
