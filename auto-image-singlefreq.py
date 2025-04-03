@@ -2,6 +2,8 @@
 Jimmy Lynch
 University of Oregon, Department of Physics
 
+# did this work?
+
 Script to create an image from a single-frequency VLA observation using CASA's tclean method
 
 Running the script: 
