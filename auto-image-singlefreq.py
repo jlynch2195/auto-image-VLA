@@ -1,33 +1,33 @@
-'''
-Jimmy Lynch
-University of Oregon, Department of Physics
+# Jimmy Lynch
+# University of Oregon, Department of Physics
 
-Script to create an image from a single-frequency VLA observation using CASA's tclean method.
-User inputs are defined in config.yaml. Change these accordingly. 
-
-
-Running the script: 
-    (base) cd place/where/this/code/lives
-    (base) casa
-    (CASA) <1>: execfile("auto-image-singlefreq.py")
-
-The script proceeds in the following way:
-    1. Creates and scrapes a listfile for information to tclean
-        a. Finds the observation date and uses the VLA schedule to determine the array configuration
-        b. Uses the user-specified band or manual_spws to calculate the resolution and central frequency from the VLA sensitivity table
-        c. Finds the source's field index
-        d. Finds the source's coordinates
-    2. Creates an image using tclean, using the parameters above
-    3. Optionally fits a point source in region near source coordinates using imfit and imstat
-        a. Returns the flux for a detection or an upper limit for a non-detection
+# Script to create an image from a single-frequency VLA observation using CASA's tclean method.
+# NOTE: User inputs are defined in config.yaml. Change these accordingly. 
 
 
-A couple of notes:
-    1. There's undoubtedly a better way to scrape the listfile, as locating specific lines via keywords is subject to failure if VLA changes listfile structure
-    2. For manual_spws, the central frequency is calculated as the mean of the center frequencies for the manual_spws. This may or may not be correct
-    3. For manual_spws, the cell_size (resolution) is calculated using theta ~ lambda/D, with D being the maximum baseline of the configuration
+# Running the script: 
+#     (base) cd place/where/this/code/lives/
+#     (base) casa
+#     (CASA) <1>: execfile("auto-image-singlefreq.py")
 
-'''
+# CASA produces a number of files in the directory where you ran execfile. Just be aware of unwanted files clogging up the repo.
+
+
+# The script proceeds in the following way:
+#     1. Creates and scrapes a listfile for information to tclean
+#         a. Finds the observation date and uses the VLA schedule to determine the array configuration
+#         b. Uses the user-specified band or manual_spws to calculate the resolution and central frequency from the VLA sensitivity table
+#         c. Finds the source's field index
+#         d. Finds the source's coordinates
+#     2. Creates an image using tclean, using the parameters above
+#     3. Optionally fits a point source in region near source coordinates using imfit and imstat
+#         a. Returns the flux for a detection or an upper limit for a non-detection
+
+# A couple of notes:
+#     1. There's undoubtedly a better way to scrape the listfile, as locating specific lines via keywords is subject to failure if VLA changes listfile structure
+#     2. For manual_spws, the central frequency is calculated as the mean of the center frequencies for the manual_spws. This may or may not be correct
+#     3. For manual_spws, the cell_size (resolution) is calculated using theta ~ lambda/D, with D being the maximum baseline of the configuration
+
 import numpy as np
 import os
 import pandas as pd
@@ -38,21 +38,20 @@ import yaml
 
 from datetime import datetime
 
-'''
-Function to scrape a listfile for information needed for tclean ================================================================
-Inputs:
-    listfile (str): path/to/listfile.txt, which was automatically created in location of measurement set in main
-    source_name (str): user-specified name of source, like "ASASSN-14ae"
-    band (str): user-specified VLA band to image, like "C"
-    use_manual_spws (boolean): trigger in main to use own spectral windows and overwrite those in the band
-    manual_spws (str): manual spectral windows, either in a range using ~ or all comma separated: combinations not yet supported
-Returns:
-    field (str): index of source in listfile
-    cell_size (float): resolution [arcsec/pixel] of image, calculated by dividing the synthesized beamwidth by a factor of 4, as is recommended by NRAO
-    spw_range (str): spectral window range to image, given in format 'start_spw~stop_spw'
-    central_freq (float): central frequency of VLA band given
-    ra (str) and dec (str): coordinates of source
-'''
+
+# Function to scrape a listfile for information needed for tclean ================================================================
+# Inputs:
+#     listfile (str): path/to/listfile.txt, which was automatically created in location of measurement set in main
+#     source_name (str): user-specified name of source, like "ASASSN-14ae"
+#     band (str): user-specified VLA band to image, like "C"
+#     use_manual_spws (boolean): trigger in main to use own spectral windows and overwrite those in the band
+#     manual_spws (str): manual spectral windows, either in a range using ~ or all comma separated: combinations not yet supported
+# Returns:
+#     field (str): index of source in listfile
+#     cell_size (float): resolution [arcsec/pixel] of image, calculated by dividing the synthesized beamwidth by a factor of 4, as is recommended by NRAO
+#     spw_range (str): spectral window range to image, given in format 'start_spw~stop_spw'
+#     central_freq (float): central frequency of VLA band given
+#     ra (str) and dec (str): coordinates of source
 def scrape_listfile(listfile, source_name, band, use_manual_spws, manual_spws):
 
     # open listfile
@@ -177,16 +176,15 @@ def scrape_listfile(listfile, source_name, band, use_manual_spws, manual_spws):
     return field, cell_size, spw_range, central_freq, ra, dec
 
 
-'''
-Function to fit an image created with tclean in a region specific ==============================================================
-Inputs:
-    image_name (str): image_name, including the .image.tt0 suffix
-    region (str): CASA region to fit, default defined in main as a 2.5*synthesized_beamwidth arcsec circle centered at the source coordinates
-Returns:
-    flux (float): flux measured by imfit in the case of a detection, or 3*rms measured by imstat in the case of a non-detection 
-    rms (float): root-mean square error measured by imstat (our current method of flux measurement)
-    detection (boolean): True if there was a 3 sigma detection, False if not (turns False either by imfit fail or flux<3*rms)
-'''
+
+# Function to fit an image created with tclean in a region specific ==============================================================
+# Inputs:
+#     image_name (str): image_name, including the .image.tt0 suffix
+#     region (str): CASA region to fit, default defined in main as a 2.5*synthesized_beamwidth arcsec circle centered at the source coordinates
+# Returns:
+#     flux (float): flux measured by imfit in the case of a detection, or 3*rms measured by imstat in the case of a non-detection 
+#     rms (float): root-mean square error measured by imstat (our current method of flux measurement)
+#     detection (boolean): True if there was a 3 sigma detection, False if not (turns False either by imfit fail or flux<3*rms)
 def fit_point_source(image_name, region):
 
     # if imfit works, it found something to fit to, but not necessarily your source
@@ -219,21 +217,21 @@ def fit_point_source(image_name, region):
     return round(flux*1000, 3), round(rms*1000, 3), detection
 
 
-'''
-Import user inputs from config file here: =======================================================================================================
-    measurement_set (str): path/to/measurement_set.ms
-    source_name (str): name of source as defined by VLA observation
-    band (str): VLA band, like "C"
-    image_size (int): default 256
 
-Note: if you want to change tclean parameters, scroll down to that command
+# Import user inputs from config file here: =======================================================================================================
+#     measurement_set (str): path/to/measurement_set.ms
+#     source_name (str): name of source as defined by VLA observation
+#     band (str): VLA band, like "C"
+#     image_size (int): default 256
 
-'''
+# Note: if you want to change tclean parameters, scroll down to that command
+
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
+# read params from config.yaml
 measurement_set = config["measurement_set"]
-source_name = config["source"]
+source_name = config["source_name"]
 band = config["band"]
 image_size = config["image_size"]
 use_manual_spws = config["use_manual_spws"]
@@ -241,9 +239,7 @@ manual_spws = config["manual_spws"]
 try_point_source = config["try_point_source"]
 
 
-'''
-Code executes below this comment block; no need to change ======================================================================
-'''
+# Code executes below this comment block; no need to change ======================================================================================
 # create listfile in same directory as measurement set (compared to sticking it where you run this code)
 directory = os.path.dirname(measurement_set)
 listfile = directory+"/listfile.txt"
@@ -282,7 +278,6 @@ else:
            spw=spw_range, 
            specmode='mfs', 
            nterms=2, 
-           reffreq=str(central_freq),
            deconvolver='mtmfs', 
            imsize=[image_size, image_size], 
            cell=[cell_size], 
