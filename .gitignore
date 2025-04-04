@@ -1,1 +1,6 @@
 config.yaml
+*.log
+*.tmp
+*.last
+.DS_Store
+.ipynb_checkpoints/
