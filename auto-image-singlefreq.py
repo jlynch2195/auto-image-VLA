@@ -302,7 +302,7 @@ if try_point_source:
     print(f"Fitting point source in region {radius_of_fit}arcsec centered at {ra}, {dec} \n")
 
     # try the fit and print values
-    flux, flux_err rms, detection = fit_point_source(image_name+".image.tt0", region)
+    flux, flux_err, rms, detection = fit_point_source(image_name+".image.tt0", region)
     if detection:
         print(f"Detection at {central_freq}GHz: {flux} +/- {flux_err} mJy.")
         print("RMS: {rms} mJy/beam")
