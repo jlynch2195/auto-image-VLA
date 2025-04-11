@@ -194,6 +194,7 @@ def fit_point_source(image_name, region):
         imstat_results = imstat(imagename=image_name, region=region)
     
         flux = imfit_results["results"]["component0"]["flux"]["value"][0]
+        flux_err = imfit_results["results"]["component0"]["flux"]["error"][0]
         rms = imstat_results["rms"][0]
         strength_of_detection_in_sigma = flux/rms
     
@@ -202,6 +203,7 @@ def fit_point_source(image_name, region):
             detection = True
         else:
             flux = 3*rms
+            flux_err = 0
             detection = False
 
     # if there is nothing there, imfit will fail. Reporting flux as 3x the rms from imstat
@@ -214,7 +216,7 @@ def fit_point_source(image_name, region):
         detection = False
 
     # returning values in mJy
-    return round(flux*1000, 3), round(rms*1000, 3), detection
+    return round(flux*1000, 3), round(flux_err*1000, 3), round(rms*1000, 3), detection
 
 
 
@@ -300,9 +302,10 @@ if try_point_source:
     print(f"Fitting point source in region {radius_of_fit}arcsec centered at {ra}, {dec} \n")
 
     # try the fit and print values
-    flux, rms, detection = fit_point_source(image_name+".image.tt0", region)
+    flux, flux_err, rms, detection = fit_point_source(image_name+".image.tt0", region)
     if detection:
-        print(f"Detection at {central_freq}GHz: {flux} +/- {rms} mJy")
+        print(f"Detection at {central_freq}GHz: {flux} +/- {flux_err} mJy.")
+        print("RMS: {rms} mJy/beam")
     else:
         print(f"Non-detection at {central_freq}GHz: <{flux} mJy")
     
