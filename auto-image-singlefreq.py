@@ -191,7 +191,8 @@ def scrape_listfile(listfile, source_name, band, use_manual_spws, manual_spws):
         B_max = B_max_arr[configuration]*1000
 
         # find cell_size based on theta ~ lambda/B_max
-        cell_size = (3*10**8)/(central_freq*10**9*B_max)*206265
+        synthesized_beamwidth = (3*10**8)/(central_freq*10**9*B_max)*206265
+        cell_size = round(synthesized_beamwidth/4, 2)
 
     return field, cell_size, spw_range, central_freq, ra, dec
 
