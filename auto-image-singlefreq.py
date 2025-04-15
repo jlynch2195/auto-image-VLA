@@ -38,6 +38,26 @@ import yaml
 
 from datetime import datetime
 
+# Import user inputs from config file here: =======================================================================================================
+#     measurement_set (str): path/to/measurement_set.ms
+#     source_name (str): name of source as defined by VLA observation
+#     band (str): VLA band, like "C"
+#     image_size (int): default 256
+
+# Note: if you want to change tclean parameters, scroll down to that command
+
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+# read params from config.yaml
+measurement_set = config["measurement_set"]
+source_name = config["source_name"]
+band = config["band"]
+image_size = config["image_size"]
+use_manual_spws = config["use_manual_spws"]
+manual_spws = config["manual_spws"]
+try_point_source = config["try_point_source"]
+
 
 # Function to scrape a listfile for information needed for tclean ================================================================
 # Inputs:
@@ -176,7 +196,6 @@ def scrape_listfile(listfile, source_name, band, use_manual_spws, manual_spws):
     return field, cell_size, spw_range, central_freq, ra, dec
 
 
-
 # Function to fit an image created with tclean in a region specific ==============================================================
 # Inputs:
 #     image_name (str): image_name, including the .image.tt0 suffix
@@ -217,28 +236,6 @@ def fit_point_source(image_name, region):
 
     # returning values in mJy
     return round(flux*1000, 3), round(flux_err*1000, 3), round(rms*1000, 3), detection
-
-
-
-# Import user inputs from config file here: =======================================================================================================
-#     measurement_set (str): path/to/measurement_set.ms
-#     source_name (str): name of source as defined by VLA observation
-#     band (str): VLA band, like "C"
-#     image_size (int): default 256
-
-# Note: if you want to change tclean parameters, scroll down to that command
-
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
-
-# read params from config.yaml
-measurement_set = config["measurement_set"]
-source_name = config["source_name"]
-band = config["band"]
-image_size = config["image_size"]
-use_manual_spws = config["use_manual_spws"]
-manual_spws = config["manual_spws"]
-try_point_source = config["try_point_source"]
 
 
 # Code executes below this comment block; no need to change ======================================================================================
