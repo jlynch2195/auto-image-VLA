@@ -250,7 +250,10 @@ print(f"Created listfile {listfile} \n")
 field, cell_size, spw_range, central_freq, ra, dec = scrape_listfile(listfile, source_name, band, use_manual_spws, manual_spws)
 
 # define image name (up to user, just a useful default)
-image_name = directory+f"/{source_name}_{central_freq}GHz_{image_size}px"
+direc = directory + f"/{central_freq}GHz_image"
+if not os.path.exists(direc):
+    os.makedirs(direc)
+image_name = direc+f"/{source_name}_{central_freq}GHz_{image_size}px"
 
 # check if the image already exists to avoid overwriting
 files_in_directory = os.listdir(directory)
