@@ -205,49 +205,65 @@ def scrape_listfile(listfile, source_name, band, use_manual_spws, manual_spws):
 #     flux (float): flux measured by imfit in the case of a detection, or 3*rms measured by imstat in the case of a non-detection 
 #     rms (float): root-mean square error measured by imstat (our current method of flux measurement)
 #     detection (boolean): True if there was a 3 sigma detection, False if not (turns False either by imfit fail or flux<3*rms)
-def fit_point_source(image_name, region):
+def fit_point_source(image_name, region_flux, region_rms, region_non_detection):
 
+    near_source_imstat_results = imstat(imagename=image_name, region=region_rms)
+    near_source_rms = near_source_imstat_results["rms"][0]
+    
     # if imfit works, it found something to fit to, but not necessarily your source
     # it's good to check manually by opening the image in CARTA
     try:
-        imfit_results = imfit(imagename=image_name, region=region)
-        imstat_results = imstat(imagename=image_name, region=region)
+        rms = near_source_rms
+        imfit_results = imfit(imagename=image_name, region=region_flux, rms=rms)
     
         flux = imfit_results["results"]["component0"]["flux"]["value"][0]
         flux_err = imfit_results["results"]["component0"]["flux"]["error"][0]
-        rms = imstat_results["rms"][0]
-        strength_of_detection_in_sigma = flux/rms
+        strength = flux/rms
     
         # just in case imfit does work but there isn't a 3 sigma detection
-        if strength_of_detection_in_sigma >= 3:
+        if strength >= 3:
             detection = True
+            result = "imfit success"
         else:
             flux = 3*rms
             flux_err = 0
             detection = False
+            result = "imfit success, <3 RMS"
 
     # if there is nothing there, imfit will fail. Reporting flux as 3x the rms from imstat
     except:
         print(f"Imfit failed: check results carefully!")
-        imstat_results = imstat(imagename=image_name, region=region)
+        imstat_results = imstat(imagename=image_name, region=region_non_detection)
         rms = imstat_results["rms"][0]
         flux = 3*rms
         flux_err = 0
+        strength = 0
         detection = False
+        result = "imfit fail: flux is 3*RMS"
 
     # returning values in mJy
-    return round(flux*1000, 3), round(flux_err*1000, 3), round(rms*1000, 3), detection
+    return round(flux*1000, 3), round(flux_err*1000, 3), round(rms*1000, 3), round(strength, 1), detection, result
 
 
 # Code executes below this comment block; no need to change ======================================================================================
 # create listfile in same directory as measurement set (compared to sticking it where you run this code)
 directory = os.path.dirname(measurement_set)
+ms_prefix = os.path.splitext(measurement_set)[0]
+ms_name = os.path.splitext(measurement_set.split("/")[-1])[0]
 listfile = directory+"/listfile.txt"
 
 # create listfile and scrape for tclean parameters
 listobs(vis=measurement_set, listfile=listfile, overwrite=True)
 print(f"Created listfile {listfile} \n")
 field, cell_size, spw_range, central_freq, ra, dec = scrape_listfile(listfile, source_name, band, use_manual_spws, manual_spws)
+
+# save parameters into dataframe to be consistent with multi-frequency case
+df_store = pd.DataFrame()
+df_store["band"] = band
+df_store["split"] = "all"
+df_store["freq [GHz]"] = central_freq
+df_store["spws"] = spw_range
+df_store["cell size [arcsec/pixel]"] = cell_size
 
 # define image name (up to user, just a useful default)
 direc = directory + f"/{central_freq}GHz_image"
@@ -295,20 +311,44 @@ else:
 # fit to point source and, if fails, return upper limit as 3*RMS in region where source should be
 if try_point_source:
 
-    # up to debate how big the circle to fit within should be: using 2.5 times the synthesized beamwidth centered on source
+    # global results
+    imstat_results = imstat(imagename=image_name+".image.tt0")
+    rms_image = imstat_results["rms"][0]
+    max_image = imstat_results["max"][0]
+    dynamic_range = round(max_image/rms_image, 1)
+
+    # define region for detection fit: using 2.5 times the synthesized beamwidth centered on source
     radius_of_fit = 10*cell_size
-    
-    # define region for fit
-    region = f"circle[[{ra}, {dec}], {radius_of_fit}arcsec]"
-    print(f"Fitting point source in region {radius_of_fit}arcsec centered at {ra}, {dec} \n")
+    region_flux = f"circle[[{ra}, {dec}], {radius_of_fit}arcsec]"
+
+    # define region for near-source RMS measurement: using annulus with 100 synthesized beams area and blocking source
+    inner_rad_annulus = 10*cell_size
+    outer_rad_annulus = 22.5*cell_size
+    region_rms = f"annulus[[{ra}, {dec}], [{inner_rad_annulus}arcsec, {outer_rad_annulus}arcsec]]"
+
+    # define region for on-source RMS measurement if non-detection: using circle with outer annulus size
+    region_non_detection = f"circle[[{ra}, {dec}], {outer_rad_annulus}arcsec]"
 
     # try the fit and print values
-    flux, flux_err, rms, detection = fit_point_source(image_name+".image.tt0", region)
+    flux, flux_err, rms, strength, detection, result = fit_point_source(image_name+".image.tt0", region_flux, region_rms, region_non_detection)
     if detection:
-        print(f"Detection at {central_freq}GHz: {flux} ± {flux_err} mJy.")
+        print(f"Detection at {freq}: {flux} ± {flux_err} mJy.")
         print(f"RMS: {rms} mJy/beam")
     else:
-        print(f"Non-detection at {central_freq}GHz: <{flux} mJy")
+        print(f"Non-detection at {freq}: <{flux} mJy")
+
+    # append values to 
+    df_store["Flux [mJy]"] = flux
+    df_store["Flux_err [mJy]"] = flux_err
+    df_store["RMS [mJy]"] = rms
+    df_store["Flux/RMS [-]"] = strength
+    df_store["Detection"] = detection
+    df_store["Fit result"] = result
+    df_store["Dynamic range"] = dynamic_range
+
+    logfile_path = f"{ms_prefix}.{image_size}px.flux_measurement.csv"
+    df_store.to_csv(logfile_path)
+    
     
     
     
