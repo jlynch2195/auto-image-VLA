@@ -229,7 +229,7 @@ if try_point_source:
     logfile_path = f"{ms_prefix}.{image_size}px.flux_measurements.csv"
 
 print(df_store)
-'''
+
 for i, row in df_store.iterrows():
     
     spws = row["spws"]
@@ -335,7 +335,6 @@ if try_point_source:
     df_store["Dynamic range"] = dynamic_ranges
     
     df_store.to_csv(logfile_path)
-'''
         
     
     
