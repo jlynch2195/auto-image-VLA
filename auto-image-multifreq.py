@@ -1,3 +1,4 @@
+from casatools import regionmanager
 import numpy as np
 import os
 import pandas as pd
@@ -16,6 +17,7 @@ measurement_set = config["measurement_set"]
 source_name = config["source_name"]
 image_size = config["image_size"]
 try_point_source = config["try_point_source"]
+best_guess_flux = config["best_guess_flux [Jy/beam]"]
 split = config["split"]
 use_single_band = config["use_single_band"]
 single_band = config["single_band"]
@@ -127,8 +129,8 @@ def scrape_listfile(listfile, source_name):
         df_band = df.iloc[indxs]
     
         # remove two cal spws from X-band
-        #if band == "EVLA_X":
-        #    df_band = df_band.iloc[2:]
+        if band == "EVLA_X":
+            df_band = df_band.iloc[2:]
     
         # split into frequency bands
         nspws = df_band.shape[0]
@@ -163,7 +165,7 @@ def scrape_listfile(listfile, source_name):
 def get_theoretical_rms(listfile):
     return None
 
-def fit_point_source(image_name, region_flux, region_rms, region_non_detection):
+def fit_point_source(image_name, estimates_file, region_flux, region_rms, region_non_detection, imfit_logfile):
 
     near_source_imstat_results = imstat(imagename=image_name, region=region_rms)
     near_source_rms = near_source_imstat_results["rms"][0]
@@ -172,7 +174,8 @@ def fit_point_source(image_name, region_flux, region_rms, region_non_detection):
     # it's good to check manually by opening the image in CARTA
     try:
         rms = near_source_rms
-        imfit_results = imfit(imagename=image_name, region=region_flux, rms=rms)
+        print(region_flux)
+        imfit_results = imfit(imagename=image_name, region=region_flux, rms=rms, logfile=imfit_logfile)
     
         flux = imfit_results["results"]["component0"]["flux"]["value"][0]
         flux_err = imfit_results["results"]["component0"]["flux"]["error"][0]
@@ -284,13 +287,27 @@ for i, row in df_store.iterrows():
     # fit to point source and, if fails, return upper limit as 3*RMS in region where source should be
     if try_point_source:
 
+        # logfile
+        imfit_logfile = f"{band_directory}/imfit_results.txt"
+        estimates_file = f"{band_directory}/estimates.txt"
+
+        # write estimates file
+        # format is peak intensity, peak x-pixel value, peak y-pixel value, major axis, minor axis, position angle, fixed.
+        midx, midy = image_size/2, image_size/2
+        beam_size = 4*cell_size
+        estimates = [f"{best_guess_flux}, {midx}, {midy}, {beam_size}pix, {beam_size}pix, {0}deg"]
+
+        with open(estimates_file, "w") as f:
+            for line in estimates:
+                f.write(line + "\n")
+
         # global results
         imstat_results = imstat(imagename=image_name+".image.tt0")
         rms_image = imstat_results["rms"][0]
         max_image = imstat_results["max"][0]
         dynamic_range = round(max_image/rms_image, 1)
         dynamic_ranges.append(dynamic_range)
-    
+
         # define region for detection fit: using 2.5 times the synthesized beamwidth centered on source
         radius_of_fit = 10*cell_size
         region_flux = f"circle[[{ra}, {dec}], {radius_of_fit}arcsec]"
@@ -304,7 +321,12 @@ for i, row in df_store.iterrows():
         region_non_detection = f"circle[[{ra}, {dec}], {outer_rad_annulus}arcsec]"
     
         # try the fit and print values
-        flux, flux_err, rms, strength, detection, result = fit_point_source(image_name+".image.tt0", region_flux, region_rms, region_non_detection)
+        flux, flux_err, rms, strength, detection, result = fit_point_source(image_name+".image.tt0", 
+                                                                            estimates_file, 
+                                                                            region_flux, 
+                                                                            region_rms, 
+                                                                            region_non_detection, 
+                                                                            imfit_logfile)
         if detection:
             print(f"Detection at {freq}: {flux} ± {flux_err} mJy.")
             print(f"RMS: {rms} mJy/beam")
