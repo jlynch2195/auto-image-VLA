@@ -44,7 +44,7 @@ def tclean_helper(df_store, measurement_set, ms_name, image_size, field, root_di
         cell_size = row["cell size [arcsec/pixel]"]
     
         # set up a folder to dump all the tclean outputs for this band/freq combo
-        tclean_out_directory = f"{root_dir}/{band}/{freq}GHz"
+        tclean_out_directory = f"{root_dir}/{band}/{freq}"
         if not os.path.exists(tclean_out_directory):
             os.makedirs(tclean_out_directory)
 
@@ -190,11 +190,14 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
 
     # get list of bands in listfile
     bands = list(set([df["Name"].iloc[i].split("#")[0] for i in range(df.shape[0])]))
+    if use_single_band:
+        bands = [single_band]
     
     rows_list = []
     for i, band in enumerate(bands):
     
         # cell size
+        print(df_resolution[df_resolution["band"] == band])
         #central_freq = (df_resolution[df_resolution["band"] == band]["central_freq"].values[0]).item()
         central_freq = (df_resolution[df_resolution["band"] == band]["central_freq"]).item()
         synthesized_beamwidth = (df_resolution[df_resolution["band"] == band][configuration]).item()
@@ -217,18 +220,24 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     
         # lower
         freq_ghz = round(df_lower["CtrFreq(MHz)"].values.astype(float).mean()/1000, 2)
+        if band == "EVLA_L":
+            freq_ghz = 1.25
         spws = df_lower["SpwID"].values.astype(int)
         spw_range = f"{min(spws)}~{max(spws)}"
         rows_list.append({"band":band, "split":"lower", "freq [GHz]":freq_ghz, "spws":spw_range, "cell size [arcsec/pixel]":cell_size})
     
         # upper
         freq_ghz = round(df_upper["CtrFreq(MHz)"].values.astype(float).mean()/1000, 2)
+        if band == "EVLA_L":
+            freq_ghz = 1.75
         spws = df_upper["SpwID"].values.astype(int)
         spw_range = f"{min(spws)}~{max(spws)}"
         rows_list.append({"band":band, "split":"upper", "freq [GHz]":freq_ghz, "spws":spw_range, "cell size [arcsec/pixel]":cell_size})
 
         # all
         freq_ghz = round(df_all["CtrFreq(MHz)"].values.astype(float).mean()/1000, 2)
+        if band == "EVLA_L":
+            freq_ghz = 1.5
         spws = df_all["SpwID"].values.astype(int)
         spw_range = f"{min(spws)}~{max(spws)}"
         rows_list.append({"band":band, "split":"all", "freq [GHz]":freq_ghz, "spws":spw_range, "cell size [arcsec/pixel]":cell_size})
@@ -242,8 +251,6 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
         df_store = df_store[df_store["split"] == "all"].reset_index(drop=True)
     elif split == "halves":
         df_store = df_store[df_store["split"].isin(["upper", "lower"])].reset_index(drop=True)
-    if use_single_band:
-        df_store = df_store[df_store["band"] == single_band].reset_index(drop=True)
 
     return df_store, field
 
@@ -343,6 +350,10 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
 
             # if overriding that, throw a warning but keep the annulus and throw a warning that this needs to be redone
             if override_sfr_request:
+
+                near_source_imstat_results = imstat(image_path, region=source_free_region)
+                near_source_rms = near_source_imstat_results["rms"][0]
+                
                 source_free_region_to_write = f"circle[[{x0}pix, {y0}pix], {(50**0.5)*beam_radius}arcsec]"
                 write_region(region=source_free_region_to_write, region_name=f"{subdir_path}/{image_name}.source_free_region.circle.move_and_resave")
                 warnings.warn(f"source-free region has potential source: {region_SNR} SNR found in source-free region. "
@@ -411,6 +422,35 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
         nondetection_imstat_results = imstat(image_path, region=region_nondetection)
         on_source_rms = nondetection_imstat_results["rms"][0]
 
+        # also fix the beam size and integrate over that
+        '''
+        fixed_x0 = x0
+        fixed_y0 = y0
+        fixed_maj = bmaj
+        fixed_min = bmin
+        fixed_pa = bpa
+        init_guess_peak = flux_peak
+    
+        estfile = f"{directory}/estimates.txt"
+        with open(estfile, "w") as f:
+            #f.write(f"{init_guess_peak}, {fixed_x0}, {fixed_y0}, {fixed_maj}arcsec, {fixed_min}arcsec, {fixed_pa}deg, fxyabp")
+            f.write("# x, y, peak, major, minor, pa, fit_x, fit_y, fit_peak, fit_major, fit_minor, fit_pa\n")
+            f.write(f"{fixed_x0}, {fixed_y0}, {init_guess_peak}, {fixed_maj}arcsec, {fixed_min}arcsec, {fixed_pa}deg, abp\n")
+
+        # results
+        imfit_results_beam = imfit(imagename=image_path, rms=near_source_rms, estimates=estfile)
+        flux_beam = imfit_results_beam["results"]["component0"]["flux"]["value"][0]
+        flux_err_beam = imfit_results_beam["results"]["component0"]["flux"]["error"][0]
+        flux_peak_beam = imfit_results_beam["results"]["component0"]["peak"]["value"]
+        SNR_beam = flux_peak_beam/near_source_rms
+
+        # shape: just make sure it's the same beam shape
+        fmaj_beam = imfit_results_beam["results"]["component0"]["shape"]["majoraxis"]["value"]
+        fmin_beam = imfit_results_beam["results"]["component0"]["shape"]["minoraxis"]["value"]
+        fpa_beam = imfit_results_beam["results"]["component0"]["shape"]["positionangle"]["value"]
+        dArea_beam, dPhi_beam = compare_fit_to_beam(bmaj, bmin, bpa, fmaj_beam, fmin_beam, fpa_beam)
+        '''
+
     # if there is nothing there, imfit will fail. Reporting flux as 3x the RMS in a region over the source
     except:
         print(f"Imfit failed: check results carefully!")
@@ -418,23 +458,52 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
         nondetection_imstat_results = imstat(image_path, region=region_nondetection)
         on_source_rms = nondetection_imstat_results["rms"][0]
         flux = 3*on_source_rms
+        flux_peak = flux
         flux_err = 0
         SNR = 0
         point_source_fit_region = None
         dArea, dPhi = 0, 0
         result = "imfit fail: reporting flux as 3*on_source_RMS"
 
+        flux_beam = 0
+        flux_err_beam = 0
+        flux_peak_beam = 0
+        SNR_beam = 0
+        dArea_beam, dPhi_beam = 0
+
     # store data
-    results_dict = {"telescope": telescope, "source": source, "program": None, "observation_date": obs_date, "freq": freq,
-                    "dynamic_range": dynamic_range, 
-                    "rms_image": round(1000*rms_image, 4), 
-                    "near_source_rms": round(1000*near_source_rms, 4), 
-                    "on_source_rms": round(1000*on_source_rms, 4), 
-                    "RMS_region_is_source_free": is_source_free, "result": result, 
-                    "flux": round(1000*flux, 4),
-                    "flux_err": round(1000*flux_err, 4), "SNR": round(SNR, 2), 
-                    "beam_region": beam_region, "point_source_fit_region": point_source_fit_region, 
-                    "dArea": round(dArea, 2), "dPhi": round(dPhi, 2)}
+    results_dict = {"source": source, 
+                    "Telescope": telescope, 
+                    "Program": None, 
+                    "Config": None,
+                    "Observation Date": obs_date, 
+                    "dT [days]": None, 
+                    "Data source": "Jimmy", 
+                    "Freq [Ghz]": freq, 
+                    "Flux [mJy]": round(1000*flux, 4), 
+                    "Flux_err [mJy]": round(1000*flux_err, 4), 
+                    "dA [fit_area/beam]": round(dArea, 2), 
+                    "dPhi [pa-pa_beam]": round(dPhi, 2),
+                    "Flux_peak [mJy/beam]": round(1000*flux_peak, 4), 
+                    "RMS [mJy/beam]": round(1000*near_source_rms, 4),
+                    "SNR [-]": round(SNR, 1), 
+                    "Detection": None, 
+                    "Fit result": result, 
+                    "Dynamic Range": dynamic_range, 
+                    "Image process": None,
+                    "Publish with?": None,
+                    "Where is my image": None,
+                    "Configuration": None}
+    '''
+                    "Flux_fixed_beam [mJy]": round(1000*flux_beam, 4),	
+                    "Flux_err_fixed_beam [mJy]": round(1000*flux_err_beam, 4),	
+                    "Flux_peak_fixed_beam [mJy/beam]": round(1000*flux_peak_beam, 4),
+                    "SNR_fixed_beam [-]": round(SNR_beam, 1), 
+                    "dArea_beam": round(dArea_beam, 2), 
+                    "dPhi_beam": round(dPhi_beam, 2),
+                    "RMS_whole_image": round(1000*rms_image, 4), 
+                    "RMS_on_source": round(1000*on_source_rms, 4), }
+    '''
 
     # print summary
     if print_results:
@@ -452,8 +521,8 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
 
     if write_results:
         results_save = results_dict.copy()
-        results_save = results_save.pop("beam_region", None)
-        results_save = results_save.pop("point_source_fit_region", None)
+        #results_save.pop("beam_region", None)
+        #results_save.pop("point_source_fit_region", None)
         df_save = pd.DataFrame([results_save])
         df_save.to_csv(f"{subdir_path}/{image_name}.fit_results.csv")
     
