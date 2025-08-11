@@ -31,7 +31,6 @@ print_results = config["print_results"]
 write_results = config["write_results"]          
 write_regions = config["write_regions"]          
 override_sfr_request = config["override_sfr_request"]
-print(write_regions)
 
 # where am I and what am I looking at
 root_dir = os.path.dirname(measurement_set)                   # should be program/source/obs_date/
