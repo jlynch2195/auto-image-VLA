@@ -469,7 +469,7 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
         flux_err_beam = 0
         flux_peak_beam = 0
         SNR_beam = 0
-        dArea_beam, dPhi_beam = 0
+        dArea_beam, dPhi_beam = 0, 0
 
     # store data
     results_dict = {"source": source, 
