@@ -265,7 +265,8 @@ write_results = True          # if True, writes results as an excel sheet in imf
 write_regions = True          # if True, writes casa region files for beam, source region of fit, fit result, and source-free region
 override_sfr_request = False  # if True, bypasses the error that will be thrown if the source-free region has a suspected source
 '''
-def fit_point_source(image_path, source_free_region=None, print_results=True, write_results=True, write_regions=True, override_sfr_request=False):
+def fit_point_source(image_path, source_free_region=None, print_results=True, write_results=True, write_regions=True, override_sfr_request=False,
+                    ra_pix=None, dec_pix=None):
 
     def write_region(region, region_name):
         with open(f"{region_name}.crtf", "w") as f:
@@ -300,6 +301,8 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
     # scrape information from header
     header = imhead(image_path, mode="list")
     x0, y0 = header["crpix1"], header["crpix2"] # pixel number of center of field
+    if ra_pix is not None:
+        x0, y0 = ra_pix, dec_pix
     cell_size = header["cdelt2"] # arcseconds per pixel
     source = header["object"]
     freq = round(header["restfreq"][0]/10**9, 2)
