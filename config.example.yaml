@@ -1,13 +1,30 @@
-measurement_set: "path/to/measurement_set.ms"
-source_name: "source"
-band: "C"
-image_size: 256
+measurement_set: "path/to/data.ms"
+source_name: "target"
+image_size: 3200
+try_point_source: True
 
-# toggle manual spectral window use, in case removing certain frequencies is beneficial
-# if true, tclean will use manual_spws and the central_freq will be updated to the average of the spectral windows
-use_manual_spws: false
-manual_spws: "2~17" # keep something here even if use_manual_spws=False
+# for an SED, don't have to change the single-freq params: just make sure use_single_band = FALSE
+# splits are "whole" for one image per band with all spws, "halves" for two images split down spws, or "both" 
+split: "both"
 
-# toggle fit to a point source at location of source_name
-# if true, imfit and imstat will attempt a Gaussian fit in a circle centered at the source coordinates and print flux values in terminal
-try_point_source: true
+# single-frequency parameters
+# if just want to image one band, toggle True and specify band. The "split" param from above still applies.
+use_single_band: TRUE
+single_band: "EVLA_X"
+
+# optional imfit params
+# not recommended to change below line
+# Specify casa region file or string to use in calculating the near-source RMS. If None, default annulus used.
+source_free_region: None 
+
+# if True, prints results as a dictionary in terminal
+print_results: True
+
+# if True, writes results as an excel sheet in imfit_files subdirectory
+write_results: True
+
+# if True, writes casa region files for beam, source region of fit, fit result, and source-free region
+write_regions: False
+
+# if True, bypasses the error that will be thrown if the source-free region has a suspected source
+override_sfr_request: True
