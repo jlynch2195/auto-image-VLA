@@ -259,12 +259,17 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
     def write_estimates(head):
         f0 = 3e-4
         x0, y0 = head["shape"][0]/2, head["shape"][1]/2
-        bmaj = head["restoringbeam"]["major"]["value"]
-        bmin = head["restoringbeam"]["minor"]["value"]
-        bpa = head["restoringbeam"]["positionangle"]["value"]
-        !echo "{f0}, {x0}, {y0}, {bmaj} arcsec, {bmin} arcsec, {bpa} deg, abp" > "estimates.txt"
+        bmaj = head["beammajor"]["value"] # arcsec
+        bmin = head["beamminor"]["value"] # arcsec
+        bpa = head["beampa"]["value"]
+        with open("estimates.txt", "w") as f:
+            f.write(f"{f0}, {x0}, {y0}, {bmaj} arcsec, {bmin} arcsec, {bpa} deg, abp")
+        
         return f0, x0, y0, bmaj, bmin, bpa
 
+    directory = os.path.dirname(image_path)
+    image_name = os.path.basename(image_path)
+    
     head = imhead(image_path, mode="list")
 
     # get other header data
@@ -280,10 +285,6 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
     obs_date = head["date-obs"]
     dt = datetime.strptime(obs_date, '%Y/%m/%d/%H:%M:%S.%f')
     obs_date_formatted = dt.strftime('%m/%d/%Y')
-    
-    # get imfit flux results
-    flux = imfit_results["results"]["component0"]["flux"]["value"][0]
-    flux_err = imfit_results["results"]["component0"]["flux"]["error"][0]
 
     # fit image
     f0, x0, y0, bmaj, bmin, bpa = write_estimates(head)
@@ -292,32 +293,49 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
 
     # detection
     try: 
-        imfit_results = imfit(imagename=image_path, region=region_flux, rms=near_source_rms)
-        flux = imfit_results["results"]["component0"]["flux"]["value"][0]
-        flux_err = imfit_results["results"]["component0"]["flux"]["error"][0]
-        detection = "True"
+        imfit_results = imfit(imagename=image_path, region=region_fit, estimates="estimates.txt")
+        print("fit success")
+        flux_det = imfit_results["results"]["component0"]["flux"]["value"][0]
+        flux_err_det = imfit_results["results"]["component0"]["flux"]["error"][0]
 
     # nondetection
     except:
-        scale_nondet = 10
-        region_rms = f"ellipse[[{x0}pix, {y0}pix], [{scale*bmaj/2}arcsec, {scale*bmin/2}arcsec], {bpa}deg]"
-        nondetection_imstat_results = imstat(image_path, region=region_rms)
+        print("fail")
+        flux_det = 0
+        flux_err_det = 0
 
-        flux = 3*nondetection_imstat_results["rms"][0]
-        flux_err = 0
-        detection = "False"
+    # get RMS
+    scale_nondet = 10
+    region_rms = f"ellipse[[{x0}pix, {y0}pix], [{scale*bmaj/2}arcsec, {scale*bmin/2}arcsec], {bpa}deg]"
+    nondetection_imstat_results = imstat(image_path, region=region_rms)
+
+    flux_nondet = 3*nondetection_imstat_results["rms"][0]
 
     results_dict = {"Target": target, 
                     "Telescope": telescope, 
+                    "Program": None,
                     "Observation Date": obs_date_formatted, 
                     "dT [days]": None, 
                     "Freq [GHz]": freq, 
-                    "Flux [mJy]": round(1000*flux, 3), 
-                    "Flux_err [mJy]": round(1000*flux_err, 3), 
-                    "Detection": detection, 
-                    "Reducer": None}
+                    "Flux Det [mJy]": round(1000*flux_det, 3), 
+                    "Flux_err Det [mJy]": round(1000*flux_err_det, 3),
+                    "Detection": None, 
+                    "Reducer": None,
+                    "Upper Limit Nondet [mJy]": round(1000*flux_nondet, 3),
+                    "Error Nondet [mJy]": 0}
     
     if print_results:
+
+        keys_row = ""
+        vals_row = ""
+        
+        keys_row = "\t".join(str(k) for k in results_dict.keys())
+        vals_row = "\t".join(str(v) for v in results_dict.values())
+        
+        print(keys_row)
+        print(vals_row)
+        
+        '''
         print(f"{image_name}")
         max_len = max(len(k) for k in results_dict)
         for k, v in results_dict.items():
@@ -329,6 +347,7 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
                 else:
                     print(f"{k:<{max_len}} : {v}")
         print("\n")
+        '''
 
     if write_results:
         results_save = results_dict.copy()
@@ -336,6 +355,9 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
         #results_save.pop("point_source_fit_region", None)
         df_save = pd.DataFrame([results_save])
         df_save.to_csv(f"{subdir_path}/{image_name}.fit_results.csv")
+
+    # delete estimates file
+    os.remove("estimates.txt")
     
     return results_dict
     

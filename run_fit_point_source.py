@@ -20,23 +20,14 @@ image_paths = [f"{prefix}/5.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
                f"{prefix}/6.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
                f"{prefix}/7.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0"]
 '''
-prefix = "/Volumes/cendes-data/25B-272/AT2023mfm/2026-02-06/"
-image_paths = [f"{prefix}/1.26GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
-               f"{prefix}/1.52GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
-               f"{prefix}/1.78GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
-               f"{prefix}/2.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
-               f"{prefix}/3.0GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
-               f"{prefix}/3.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
-               f"{prefix}/5.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
-               f"{prefix}/6.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
-               f"{prefix}/7.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
-               f"{prefix}/9.19GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
-               f"{prefix}/10.13GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
-               f"{prefix}/11.06GHz/Target_AT2023mfm_EVLA_X_final.image.tt0"]
+prefix = "/Users/jimmylynch/Desktop/radio/observations/23A-241/iPTF16fnl/EVLA_C/lower-5.0GHz"
+image_paths = [f"{prefix}/iPTF16fnl_23A-241_5.0GHz.image.tt0"]
 
 # fitting procedure
 fitting_procedure = "basic"
-combine_results = True        # If multiple image paths, will append fit results for each and write to one big csv file for easy copy/pasting
+print_results = True          # if True, prints results as a dictionary in terminal
+write_results = False          # if True, writes results as an excel sheet in imfit_files subdirectory
+combine_results = False        # If multiple image paths, will append fit results for each and write to one big csv file for easy copy/pasting
 
 # ======================================================================
 # doesn't matter if using basic procedure
@@ -47,8 +38,6 @@ dec_pix = None
 
 # optional toggles
 source_free_region = None     # Specify casa region file or string to use in calculating the near-source RMS. If NONE, default annulus used.
-print_results = True          # if True, prints results as a dictionary in terminal
-write_results = True          # if True, writes results as an excel sheet in imfit_files subdirectory
 write_regions = True          # if True, writes casa region files for beam, source region of fit, fit result, and source-free region
 override_sfr_request = True   # if True, bypasses the error that will be thrown if the source-free region has a suspected source
 
@@ -62,7 +51,7 @@ for image_path in image_paths:
                                               print_results=print_results, 
                                               write_results=write_results)
         
-    else
+    else:
         
         results_dict = fit_point_source(image_path, 
                                         source_free_region=source_free_region, 
