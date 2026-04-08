@@ -20,15 +20,26 @@ image_paths = [f"{prefix}/5.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
                f"{prefix}/6.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
                f"{prefix}/7.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0"]
 '''
-prefix = "/Users/jimmylynch/Desktop/radio/observations/VLASS"
-image_paths = [f"{prefix}/VLASS3.2.ASASSN-14ae.2024-07-12.fits"]
+prefix = "/Volumes/cendes-data/25B-272/AT2023mfm/2026-02-06/"
+image_paths = [f"{prefix}/1.26GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
+               f"{prefix}/1.52GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
+               f"{prefix}/1.78GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
+               f"{prefix}/2.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
+               f"{prefix}/3.0GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
+               f"{prefix}/3.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
+               f"{prefix}/5.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
+               f"{prefix}/6.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
+               f"{prefix}/7.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
+               f"{prefix}/9.19GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
+               f"{prefix}/10.13GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
+               f"{prefix}/11.06GHz/Target_AT2023mfm_EVLA_X_final.image.tt0"]
 
 # override the command to fit at the middle of the image
 ra_pix = None
 dec_pix = None
 
 # optional toggles
-combine_results = False        # If multiple image paths, will append fit results for each and write to one big csv file for easy copy/pasting
+combine_results = True        # If multiple image paths, will append fit results for each and write to one big csv file for easy copy/pasting
 source_free_region = None     # Specify casa region file or string to use in calculating the near-source RMS. If NONE, default annulus used.
 print_results = True          # if True, prints results as a dictionary in terminal
 write_results = True          # if True, writes results as an excel sheet in imfit_files subdirectory

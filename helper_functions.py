@@ -306,6 +306,7 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
     cell_size = header["cdelt2"] # arcseconds per pixel
     source = header["object"]
     freq = round(header["restfreq"][0]/10**9, 2)
+    #freq = 0.144
     dt = datetime.strptime(header["date-obs"], "%Y/%m/%d/%H:%M:%S.%f")
     obs_date = dt.strftime("%Y-%m-%d")
     telescope = header["telescope"]
