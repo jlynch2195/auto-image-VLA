@@ -2,6 +2,7 @@ measurement_set: "path/to/data.ms"
 source_name: "target"
 image_size: 3200
 try_point_source: True
+fitting_procedure: "basic"
 
 # for an SED, don't have to change the single-freq params: just make sure use_single_band = FALSE
 # splits are "whole" for one image per band with all spws, "halves" for two images split down spws, or "both" 

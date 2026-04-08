@@ -24,6 +24,7 @@ try_point_source = config["try_point_source"]
 split = config["split"]
 use_single_band = config["use_single_band"]
 single_band = config["single_band"]
+fitting_procedure = config["fitting_procedure"]
 
 # optional imfit params
 source_free_region = None #config["source_free_region"] 
@@ -55,7 +56,7 @@ if try_point_source:
     print("\n")
     logfile_path = f"{root_dir}/imfit_results/{ms_name}.{image_size}px.flux_measurements.csv"
     run_fit_point_source(image_paths, source_free_region, print_results, write_results, write_regions, override_sfr_request, 
-                         logfile_path, df_store)
+                         logfile_path, df_store, fitting_procedure)
 
     
     

@@ -254,6 +254,93 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
 
     return df_store, field
 
+def fit_point_source_basic(image_path, print_results=True, write_results=True):
+
+    def write_estimates(head):
+        f0 = 3e-4
+        x0, y0 = head["shape"][0]/2, head["shape"][1]/2
+        bmaj = head["restoringbeam"]["major"]["value"]
+        bmin = head["restoringbeam"]["minor"]["value"]
+        bpa = head["restoringbeam"]["positionangle"]["value"]
+        !echo "{f0}, {x0}, {y0}, {bmaj} arcsec, {bmin} arcsec, {bpa} deg, abp" > "estimates.txt"
+        return f0, x0, y0, bmaj, bmin, bpa
+
+    head = imhead(image_path, mode="list")
+
+    # get other header data
+    target = head["object"]
+    telescope = head["telescope"]
+    if telescope == "EVLA": 
+        telescope = "VLA"
+        
+    freq = head["crval4"]
+    if head["cunit4"] == "Hz": 
+        freq = round(freq/1e9, 2)
+
+    obs_date = head["date-obs"]
+    dt = datetime.strptime(obs_date, '%Y/%m/%d/%H:%M:%S.%f')
+    obs_date_formatted = dt.strftime('%m/%d/%Y')
+    
+    # get imfit flux results
+    flux = imfit_results["results"]["component0"]["flux"]["value"][0]
+    flux_err = imfit_results["results"]["component0"]["flux"]["error"][0]
+
+    # fit image
+    f0, x0, y0, bmaj, bmin, bpa = write_estimates(head)
+    scale = 2.5
+    region_fit = f"ellipse[[{x0}pix, {y0}pix], [{scale*bmaj/2}arcsec, {scale*bmin/2}arcsec], {bpa}deg]"
+
+    # detection
+    try: 
+        imfit_results = imfit(imagename=image_path, region=region_flux, rms=near_source_rms)
+        flux = imfit_results["results"]["component0"]["flux"]["value"][0]
+        flux_err = imfit_results["results"]["component0"]["flux"]["error"][0]
+        detection = "True"
+
+    # nondetection
+    except:
+        scale_nondet = 10
+        region_rms = f"ellipse[[{x0}pix, {y0}pix], [{scale*bmaj/2}arcsec, {scale*bmin/2}arcsec], {bpa}deg]"
+        nondetection_imstat_results = imstat(image_path, region=region_rms)
+
+        flux = 3*nondetection_imstat_results["rms"][0]
+        flux_err = 0
+        detection = "False"
+
+    results_dict = {"Target": target, 
+                    "Telescope": telescope, 
+                    "Observation Date": obs_date_formatted, 
+                    "dT [days]": None, 
+                    "Freq [GHz]": freq, 
+                    "Flux [mJy]": round(1000*flux, 3), 
+                    "Flux_err [mJy]": round(1000*flux_err, 3), 
+                    "Detection": detection, 
+                    "Reducer": None}
+    
+    if print_results:
+        print(f"{image_name}")
+        max_len = max(len(k) for k in results_dict)
+        for k, v in results_dict.items():
+            if k in ["rms_image", "near_source_rms", "flux", "flux_err", "on_source_rms"]:
+                print(f"{k:<{max_len}} : {round(v, 4)} mJy")
+            else:
+                if k in ["SNR", "dArea", "dPhi"]:
+                    print(f"{k:<{max_len}} : {round(v,2)}")
+                else:
+                    print(f"{k:<{max_len}} : {v}")
+        print("\n")
+
+    if write_results:
+        results_save = results_dict.copy()
+        #results_save.pop("beam_region", None)
+        #results_save.pop("point_source_fit_region", None)
+        df_save = pd.DataFrame([results_save])
+        df_save.to_csv(f"{subdir_path}/{image_name}.fit_results.csv")
+    
+    return results_dict
+    
+    
+
 # required inputs
 '''
 image_paths = ['/Users/jimmylynch/Desktop/radio/observations/25A-060/AT2018bsi/2025-07-01/images/25A-060.AT2018bsi.2025-07-01.5.0GHz.2700px.image.tt0', '/Users/jimmylynch/Desktop/radio/observations/25A-060/AT2018bsi/2025-07-01/images/25A-060.AT2018bsi.2025-07-01.7.0GHz.2700px.image.tt0']
@@ -533,24 +620,34 @@ def fit_point_source(image_path, source_free_region=None, print_results=True, wr
     return results_dict
 
 def run_fit_point_source(image_paths, source_free_region, print_results, write_results, write_regions, override_sfr_request, 
-                         logfile_path, df_store):
+                         logfile_path, df_store, fitting_procedure):
 
     fit_results = []
-    for image_path in image_paths:
-        fit_result = fit_point_source(image_path+".image.tt0", 
-                                       source_free_region=source_free_region, 
-                                       print_results=print_results, 
-                                       write_results=write_results,
-                                       write_regions=write_regions,
-                                       override_sfr_request=override_sfr_request)
-    
-        fit_results.append(fit_result)
+
+    # basic fitting: same as imtool
+    if fitting_procedure == "basic":
+
+        for image_path in image_paths:
+            fit_result = fit_point_source_basic(image_path+".image.tt0", print_results=print_results, write_results=write_results)
+            fit_results.append(fit_result)
+
+    # advanced fitting capabilities
+    else:
+        for image_path in image_paths:
+            fit_result = fit_point_source(image_path+".image.tt0", 
+                                           source_free_region=source_free_region, 
+                                           print_results=print_results, 
+                                           write_results=write_results,
+                                           write_regions=write_regions,
+                                           override_sfr_request=override_sfr_request)
+        
+            fit_results.append(fit_result)
 
     # write logfile
     if write_results: 
         df_results = pd.DataFrame(fit_results)
         df_save = pd.concat([df_store, df_results], axis=1)
-        df_save.to_csv(logfile_path)
+        df_save.to_csv(logfile_path)    
 
 def convert_to_fits(image_path, image_prefix, crop_size=128):
 
