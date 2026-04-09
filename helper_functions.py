@@ -166,11 +166,6 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
         if (start_epoch <= date0) and (date0 < end_epoch):
             configuration = row["configuration"]
     
-    # CELL SIZE ==============================================
-    #central_freq = (df_resolution[df_resolution["band"] == band]["central_freq"].values[0]).item()
-    #synthesized_beamwidth = df_resolution[df_resolution["band"] == band][configuration].values[0].item()
-    #cell_size = synthesized_beamwidth/4
-    
     # SPECTRAL WINDOWS =================================================
     # determine how many spectral windows there are
     nspws = int(spw_line.split(' ')[3].split('(')[-1])
@@ -209,8 +204,10 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
         df_band = df.iloc[indxs]
     
         # remove two cal spws from X-band
-        if band == "EVLA_X":
-            df_band = df_band.iloc[2:]
+        # second if statement fails when the setup scans are the only EVLA_X scans in ms so added the first if statement (not tested yet)
+        if not use_single_band:
+            if band == "EVLA_X":
+                df_band = df_band.iloc[2:]
     
         # split into frequency bands
         nspws = df_band.shape[0]
@@ -220,24 +217,18 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     
         # lower
         freq_ghz = round(df_lower["CtrFreq(MHz)"].values.astype(float).mean()/1000, 2)
-        if band == "EVLA_L":
-            freq_ghz = 1.25
         spws = df_lower["SpwID"].values.astype(int)
         spw_range = f"{min(spws)}~{max(spws)}"
         rows_list.append({"band":band, "split":"lower", "freq [GHz]":freq_ghz, "spws":spw_range, "cell size [arcsec/pixel]":cell_size})
     
         # upper
         freq_ghz = round(df_upper["CtrFreq(MHz)"].values.astype(float).mean()/1000, 2)
-        if band == "EVLA_L":
-            freq_ghz = 1.75
         spws = df_upper["SpwID"].values.astype(int)
         spw_range = f"{min(spws)}~{max(spws)}"
         rows_list.append({"band":band, "split":"upper", "freq [GHz]":freq_ghz, "spws":spw_range, "cell size [arcsec/pixel]":cell_size})
 
         # all
         freq_ghz = round(df_all["CtrFreq(MHz)"].values.astype(float).mean()/1000, 2)
-        if band == "EVLA_L":
-            freq_ghz = 1.5
         spws = df_all["SpwID"].values.astype(int)
         spw_range = f"{min(spws)}~{max(spws)}"
         rows_list.append({"band":band, "split":"all", "freq [GHz]":freq_ghz, "spws":spw_range, "cell size [arcsec/pixel]":cell_size})
