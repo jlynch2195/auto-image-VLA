@@ -23,7 +23,7 @@ You may get error/warning messages about needing to commit changes before pullin
 7. .gitignore: ignore this
 8. requirements.txt: required packages, can be installed via pip install -r requirements.txt
 
-## run-rename-ms.py
+## How to: run-rename-ms.py
 The run-auto-image.py code relies on a very specific file structure at the moment. It expects that your .ms file lives in a directory with parents "/program/target/program.target.date/program.target.date.ms". I do not feel like it is worth the time to generalize this at the moment. However, if your measurement set is fresh from the NRAO archive and has formatting similar to "/program/pipeline.61139.014699073974/25A-060.sb48980598.eb49031908.60878.251126539355.ms", I at least wrote a script to turn that file structure to the required one.
 
 Only run this once on your NRAO-formatted mspath by opening the "run-rename-ms.py" script, changing the "mspath" variable to the one you have (with the full path going back to /Users, etc), and running it in a casa terminal with command 
@@ -44,12 +44,12 @@ The run-auto-image.py script imports user inputs through the config.yaml file. T
 
 Then edit the config.yaml file with your inputs. The run-auto-image.py script does NOT look for your inputs in config.example.yaml!
 
-## run-auto-image.py
+## How to: run-auto-image.py
 The config.yaml file is where you specify inputs to the run-auto-image.py code. If the observation is a single-band, you must specify which band it is, and whether you would like an image for the entire band, two images for each of the half bands, or both. If the observation is multi-frequency, it will automatically determine the bands and image each of them, again at either the entire band, the half bands, or both based on user spec. For faint sources, I recommend using "both" so that if there are non-detections in each half band, the full band is automatically imaged as well and doesn't require a re-run. For multifrequency observations, the setup scans are assumed to be X-band and occupy spws 0 and 1, which are removed from X-band imaging. This is hard-coded in (for now) and may affect results if the setup scans are different.
 
 The workflow is as follows. The script creates a listfile, scrapes it for spectral window ranges, and calculates the angular resolution based on the band and configuration. It then passes a dataframe of these values to a tclean helper that creates an image for each specified band/half-band. If try_point_source is toggled True, it will find the flux of your target source, assuming it is at or near the center of the image. More details on the fitting_procedure are below.
 
-## run-fit-point-source.py
+## How to: run-fit-point-source.py
 This script either takes in a list of images, or it will be automatically run on the images created during run-auto-image.py if try_point_source is toggled True in the config file.
 
 If fitting_procedure is "basic", this script will attempt to fit a Gaussian the exact size and orientation of the observation's beam in a small region near the target source using the CASA task imfit. By restricting the fit size to exactly one beam, this accounts for only point source-like emission, which is typically of TDEs at our typical redshifts of >0.05-0.1. If imfit succeeds, it reports the integrated flux within the beam, and the error on the fit, which includes a contribution from the background RMS.
