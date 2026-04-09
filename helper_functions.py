@@ -174,8 +174,7 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
 
     # remove first two spectral windows 
     if not use_single_band:
-        ls = ls[2:]
-        print(ls)
+        ls = ls[3:]
     
     # get formatting right
     result = []
@@ -188,6 +187,7 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     cols = cols[0:8]+["BBC-Num", "Corr1", "Corr2", "Corr3", "Corr4"]
     data = result[1:]
     df = pd.DataFrame(data, columns=cols)
+    print(df)
 
     # get list of bands in listfile
     bands = list(set([df["Name"].iloc[i].split("#")[0] for i in range(df.shape[0])]))
