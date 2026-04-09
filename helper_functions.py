@@ -173,7 +173,7 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     ls = [lines[spw_indx+1+i] for i in range(nspws+1)]
     col_names = list(filter(None, ls[0].split(' ')))
 
-    # remove first two spectral windows 
+    # remove first two spectral windows that are setup scans
     if not use_single_band:
         ls = ls[2:]
     
@@ -188,6 +188,8 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     cols = cols[0:8]+["BBC-Num", "Corr1", "Corr2", "Corr3", "Corr4"]
     data = result[1:]
     df = pd.DataFrame(data, columns=cols)
+    
+    # prints just to make sure setup scans are correctly removed
     print(df)
 
     # get list of bands in listfile
