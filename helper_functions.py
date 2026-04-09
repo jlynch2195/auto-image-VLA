@@ -171,6 +171,7 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     # determine how many spectral windows there are
     nspws = int(spw_line.split(' ')[3].split('(')[-1])
     ls = [lines[spw_indx+1+i] for i in range(nspws+1)]
+    col_names = list(filter(None, ls[0].split(' ')))
 
     # remove first two spectral windows 
     if not use_single_band:
@@ -183,7 +184,7 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
         result.append(row)
     
     # save as dataframe
-    cols = result[0]
+    cols = col_names
     cols = cols[0:8]+["BBC-Num", "Corr1", "Corr2", "Corr3", "Corr4"]
     data = result[1:]
     df = pd.DataFrame(data, columns=cols)
