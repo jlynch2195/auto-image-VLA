@@ -14,8 +14,8 @@ You only have to do this once. To update your local copy to match the newest ver
 You may get error/warning messages about needing to commit changes before pulling, meaning you've made edits to the existing files and git doesn't want to override those. If you want to keep your version, you can rename yours to avoid overwriting them. There's probably better practice; it's worth a Google.
 
 ## Repository contents:
-1. run-auto-image.py: script to create an image from any VLA observation, either single band or multi-frequency SEDs
-2. run-fit-point-source.py: script to find flux of a point source, with both basic and advanced capabilities
+1. run-auto-image.py: the main functionality; a script to create an image from any VLA observation, either single band or multi-frequency SEDs
+2. run-fit-point-source.py: also very useful; script to find flux of a point source, with both basic and advanced capabilities
 3. vla-configuration-schedule.csv: table from https://science.nrao.edu/facilities/vla/proposing/configpropdeadlines
 4. vla-resolution.csv: table from https://science.nrao.edu/facilities/vla/docs/manuals/oss/performance/resolution
 5. config.example.yaml: an example file where you should define your imaging parameters. For how to use it, see note below.
