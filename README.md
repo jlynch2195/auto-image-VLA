@@ -26,7 +26,11 @@ You may get error/warning messages about needing to commit changes before pullin
 ## run-rename-ms.py
 The run-auto-image.py code relies on a very specific file structure at the moment. It expects that your .ms file lives in a directory with parents "/program/target/program.target.date/program.target.date.ms". I do not feel like it is worth the time to generalize this at the moment. However, if your measurement set is fresh from the NRAO archive and has formatting similar to "/program/pipeline.61139.014699073974/25A-060.sb48980598.eb49031908.60878.251126539355.ms", I at least wrote a script to turn that file structure to the required one.
 
-Only run this once on your NRAO-formatted mspath by opening the "run-rename-ms.py" script, changing the "mspath" variable to the one you have (with the full path going back to /Users, etc), and running it in a casa terminal with command execfile("run-rename-ms.py"). Make sure that the correct "/program/target/program.target.date/program.target.date.ms" got created in your filesystem, and now that directory is free to paste into the config.yaml file. The NRAO mspath can now be deleted to save space.
+Only run this once on your NRAO-formatted mspath by opening the "run-rename-ms.py" script, changing the "mspath" variable to the one you have (with the full path going back to /Users, etc), and running it in a casa terminal with command 
+
+    execfile("run-rename-ms.py")
+    
+Make sure that the correct "/program/target/program.target.date/program.target.date.ms" got created in your filesystem, and now that directory is free to paste into the config.yaml file. The NRAO mspath can now be deleted to save space.
 
 Some notes/errors:
 * If the directory already exists, or if your mspath isn't directly from the archive, this will fail. At that point, it's probably time efficient to just manually rename your mspath with your target, observation date, and program, which is what we used to do before.
