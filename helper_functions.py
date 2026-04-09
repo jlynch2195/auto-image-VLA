@@ -197,7 +197,7 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     for i, band in enumerate(bands):
     
         # cell size
-        print(df_resolution[df_resolution["band"] == band])
+        #print(df_resolution[df_resolution["band"] == band])
         #central_freq = (df_resolution[df_resolution["band"] == band]["central_freq"].values[0]).item()
         central_freq = (df_resolution[df_resolution["band"] == band]["central_freq"]).item()
         synthesized_beamwidth = (df_resolution[df_resolution["band"] == band][configuration]).item()
@@ -300,7 +300,7 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
 
     # nondetection
     except:
-        print("fail")
+        print("fit fail")
         flux_det = 0
         flux_err_det = 0
 
@@ -354,7 +354,7 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
         #results_save.pop("beam_region", None)
         #results_save.pop("point_source_fit_region", None)
         df_save = pd.DataFrame([results_save])
-        df_save.to_csv(f"{subdir_path}/{image_name}.fit_results.csv")
+        #df_save.to_csv(f"{subdir_path}/{image_name}.fit_results.csv")
 
     # delete estimates file
     os.remove("estimates.txt")

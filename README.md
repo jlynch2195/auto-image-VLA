@@ -14,59 +14,94 @@ You only have to do this once. To update your local copy to match the newest ver
 You may get error/warning messages about needing to commit changes before pulling, meaning you've made edits to the existing files and git doesn't want to override those. If you want to keep your version, you can rename yours to avoid overwriting them. There's probably better practice; it's worth a Google.
 
 ## Repository contents:
-1. auto-image-singlefreq.py: script to create an image from a single-frequency VLA observation
-2. (in progress) auto-image-multifreq.py: script to create a set of images from a multi-frequency VLA observation
+1. run-auto-image.py: script to create an image from any VLA observation, either single band or multi-frequency SEDs
+2. run-fit-point-source.py: script to find flux of a point source, with both basic and advanced capabilities
 3. vla-configuration-schedule.csv: table from https://science.nrao.edu/facilities/vla/proposing/configpropdeadlines
 4. vla-resolution.csv: table from https://science.nrao.edu/facilities/vla/docs/manuals/oss/performance/resolution
 5. config.example.yaml: an example file where you should define your imaging parameters. For how to use it, see note below.
 6. .gitignore: ignore this
 7. requirements.txt: required packages, can be installed via pip install -r requirements.txt
 
-## Workflow of auto-image-singlefreq.py
-1. User passes in path/to/measurement_set.ms, desired image size (default: 256 px), source name, VLA band, and any changes to CASA's tclean default values
-2. Script creates a listfile and parses information for CASA's tclean task
-3. Script creates an image using tclean
-4. (Optional) Using CASA's imfit and imstat tasks, script fits for a point source flux value and RMS in circle centered at source coords. If no point source is detected, it reports 3*RMS within the circle as the upper limit.
+## run-auto-image.py
+The code relies on a very specific file structure at the moment. It expects that your .ms file lives in a directory ~/program/source/obs_date/data.ms. This is probably easy to generalize and is TODO.
 
-## Workflow of auto-image-multifreq.py
-(TODO): The multi-frequency script loops the single-frequency script to image several bands in one command. The user can specify if each band should be split into lower and upper spectral windows, as is good practice if you have strong detections. In the event that the imfit tasks finds non-detections in both lower and upper frequency windows for a single band, the script will re-image the measurement set for the full band to increase SNR.
+The config.yaml file is where you specify inputs to the run-auto-image.py code. If the observation is a single-band, you must specify which band it is, and whether you would like an image for the entire band, two images for each of the half bands, or both. If the observation is multi-frequency, it will automatically determine the bands and image each of them, again at either the entire band, the half bands, or both based on user spec. For faint sources, I recommend using "both" so that if there are non-detections in each half band, the full band is automatically imaged as well and doesn't require a re-run.
 
-## Example
+The workflow is as follows. The script creates a listfile, scrapes it for spectral window ranges, and calculates the angular resolution based on the band and configuration. It then passes a dataframe of these values to a tclean helper that creates an image for each specified band/half-band. If try_point_source is toggled True, it will find the flux of your target source, assuming it is at or near the center of the image. More details on the fitting_procedure are below.
+
+## run-fit-point-source.py
+This script either takes in a list of images, or it will be automatically run on the images created during run-auto-image.py if try_point_source is toggled True in the config file.
+
+If fitting_procedure is "basic", this script will attempt to fit a Gaussian the exact size and orientation of the observation's convolved beam in a small region near the target source using the CASA task imfit. By restricting the fit size to exactly one beam, this accounts for only point source-like emission, which is typically of TDEs at the typical redshift of >0.05-0.1. If there is no strong source, imfit may fail, in which case the flux is reported as 3x the RMS in a region ~100 beam areas at the target location. In some edge cases, there may be no strong source, but imfit may fit to a noise peak, returning a false positive. It is very important to open each image in CARTA to know what you expect. For this reason, the "detection" is always marked blank, and two sets of flux and flux errors are returned regardless of the true result:
+* Flux Det and Flux_err Det are the imfit results for exactly one beam at target location
+* Flux Nondet is 3x the RMS at the target, and Flux_err Nondet is always zero
+It is up to the user to determine if there is a detection, and hence which flux value to use: either a detection with an error, or an upper limit!
+
+If fitting_procedure is not "basic", a more advanced fitting procedure will take place. This allows for free-form fits (not restricted to beam shape or size) and allows the user to input source-free regions in the image to allow for a more accurate RMS reading. It can take x0 and y0 arguments to fit sources not at the center of the image. It will also write CARTA region files for the beam, the imfit Gaussian shape, and the region in which RMS is determined. This turned out to be overkill for our purposes and hence "basic" should be accurate enough in most cases.
+
+## Example: single frequency observation
 You have a calibrated measurement set called "main.ms", a C-band observation of SN2018cow, that you want to image for a quick look. You've cloned this repository and cd'ed into it on your local filesystem. You have the VLA pipeline version of CASA downloaded (https://casa.nrao.edu/casa_obtaining.shtml) and can start it by running "casa" in Terminal.
 
 You first make a copy of config.example.yaml (see note below):
 
     cp config.example.yaml config.yaml
 
-Then edit the config.yaml file to specify your parameters:
+Then edit the config.yaml file to specify your parameters. You want a modest size image at a central frequency of 6 GHz (split: "whole) to maximize SNR. You specify EVLA_C as the band because the code needs that.
 
-    measurement_set: "full/path/to/meaurement_set/main.ms"
-    source_name: "SN2018cow"
-    band: "C"
-    image_size: 256
-    
-    use_manual_spws: False
-    manual_spws: "2~32"
-    
+    measurement_set: "path/to/main.ms"
+    source_name: "target"
+    image_size: 512
+    split: "whole"
+    use_single_band: True
+    single_band: "EVLA_C"
+
+You want to get a flux measurement, but you don't need anything fancy. You just want the values printed in your terminal (print_results: True); no need for it to write a new Excel file with just a single line (write_results: False).
+
     try_point_source: True
+    fitting_procedure: "basic"
+    print_results: True
+    write_results: False
 
-That's all the setup that's required! Then, in terminal, run these commands to execute the script:
+You ignore the remaining parameters in config.yaml because "basic" fitting procedure doesn't utilize any of them. That's all the setup that's required! Then, in terminal, run these commands to execute the script:
 
     (base) cd place/where/this/code/lives/
     (base) casa
-    (CASA) <1>: execfile("auto-image-singlefreq.py")
+    (CASA) <1>: execfile("run-auto-image.py")
 
-If successful, this should print the following output in Terminal:
+If successful, this should print a summary dataframe of the different images, their bands, spws, etc. Then it will notify you that it began imaging, and when it's finished, will print two lines (headers and values) that include flux values for what to report if a detection OR a non-detection. You open the image in CARTA, determine that there's a detection, and copy the values line into an Excel sheet, using a tab delimiter. You are happy that you didn't have to go to the VLA website to find the cell size or manually draw ellipses for fitting.
 
-    "Created listfile full/path/to/meaurement_set/listfile.txt"
-    "Begin imaging full/path/to/meaurement_set/SN2018cow_6.0GHz_256px"
-    "Finished imaging full/path/to/meaurement_set/SN2018cow_6.0GHz_256px in X mins"
+## Example: multi-frequency observation
+You have a calibrated measurement set called "main-multi.ms", an LSCX-bands observation of SN2018cow, that you want to image to find information about the spectral energy distribution (SED). You've cloned this repository and cd'ed into it on your local filesystem. You have the VLA pipeline version of CASA downloaded (https://casa.nrao.edu/casa_obtaining.shtml) and can start it by running "casa" in Terminal.
 
-    "Fitting point source in region 8.75arcsec centered at RA, DEC" 
-    "Detection at 6.0GHz: X +/- X_err mJy"
+You first make a copy of config.example.yaml (see note below):
 
-Note: it's still highly recommended to open the image in CARTA to manually inspect for image artifacts and validate the flux results.
+    cp config.example.yaml config.yaml
 
+Then edit the config.yaml file to specify your parameters. You want small images to speed up the process, and you want to split the full-band images into half bands, so that you can get two data points at different frequencies per band. You are pretty sure that it's bright enough to be detected at each half-band, but you toggle split: "both" to also image the full band: better to do this now just in case, for example, the 9 and 11 GHz images have faint detections that may form a much better detection when imaged at the full band! You are doing an SED, so you toggle use_single_band: False, and you leave single_band as whatever you want.
+
+    measurement_set: "path/to/main.ms"
+    source_name: "target"
+    image_size: 256
+    split: "both"
+    use_single_band: False
+    single_band: "EVLA_C"
+
+You want to get a flux measurement for each image. This time, you want the results saved to an Excel file so that it's easy to copy over the entire block of fluxes and flux errors (write_results: True). This creates the file all_fit_results.csv in the same directory where all the images live. 
+
+    try_point_source: True
+    fitting_procedure: "basic"
+    print_results: True
+    write_results: True
+
+You ignore the remaining parameters in config.yaml because "basic" fitting procedure doesn't utilize any of them. That's all the setup that's required! Then, in terminal, run these commands to execute the script:
+
+    (base) cd place/where/this/code/lives/
+    (base) casa
+    (CASA) <1>: execfile("run-auto-image.py")
+
+If successful, this should print a summary dataframe of the different images, their bands, spws, etc. which should have 12 lines (8 half bands, 4 full bands). Imaging should all take place first, and the fluxes are measured on each image only at the end. 
+
+As an example, say you open the all_fit_results.csv file that shows quite large Flux Det values (~0.300 +/- 0.015 mJy) for L-band, but with a slight decline as frequency increases. In X-band, at 11 GHz, you find that the Flux Det value is 0.040 +/- 0.010 mJy, but since it is so faint, you open the image in CARTA just to be sure that your target is distinguishable from a noise peak. You can't convince yourself that it is, so you check 9 GHz, to the same conclusion: you do not have a detection at these frequencies. For these images, you report the flux value as the Flux Nondet, a few columns down in the Excel. For SED purposes, all is not lost: you imaged the full-band at 10 GHz image and inspection of the image yields a detection, which is due to increased SNR from "combining" the power of both the 11 and 9 GHz images. 
 
 ## Note on config.example.yaml
 The imaging scripts import user inputs through the config.yaml file. To avoid pushing my local changes to config.yaml and overriding the example I wanted to keep here, I created an example file called config.example.yaml. Locally, you should make a copy of this file and rename it config.yaml via 

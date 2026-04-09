@@ -20,14 +20,41 @@ image_paths = [f"{prefix}/5.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
                f"{prefix}/6.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
                f"{prefix}/7.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0"]
 '''
-prefix = "/Users/jimmylynch/Desktop/radio/observations/23A-241/iPTF16fnl/EVLA_C/lower-5.0GHz"
-image_paths = [f"{prefix}/iPTF16fnl_23A-241_5.0GHz.image.tt0"]
+prefix = "/Users/jimmylynch/Desktop/grace-results/25B-272/AT2023mfm/2025-11-04/final_files"
+image_paths = [f"{prefix}/1.26GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
+               f"{prefix}/1.78GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
+               f"{prefix}/2.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
+               f"{prefix}/3.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
+               f"{prefix}/5.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
+               f"{prefix}/7.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
+               f"{prefix}/9.19GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
+               f"{prefix}/11.06GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
+               f"{prefix}/1.52GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
+               f"{prefix}/3.0GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
+               f"{prefix}/6.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
+               f"{prefix}/10.13GHz/Target_AT2023mfm_EVLA_X_final.image.tt0"]
+
+'''
+prefix = "/Users/jimmylynch/Desktop/grace-results/24A-322/PS16dtm/2024-09-05/images"
+image_paths = [f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.1.25GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.1.75GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.2.5GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.3.5GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.5.0GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.7.0GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.9.0GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.11.0GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.1.5GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.3.0GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.6.0GHz.2700px.image.tt0",
+               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.10.0GHz.2700px.image.tt0",]
+'''
 
 # fitting procedure
 fitting_procedure = "basic"
 print_results = True          # if True, prints results as a dictionary in terminal
 write_results = False          # if True, writes results as an excel sheet in imfit_files subdirectory
-combine_results = False        # If multiple image paths, will append fit results for each and write to one big csv file for easy copy/pasting
+combine_results = True        # If multiple image paths, will append fit results for each and write to one big csv file for easy copy/pasting
 
 # ======================================================================
 # doesn't matter if using basic procedure
