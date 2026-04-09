@@ -7,6 +7,7 @@ import argparse
 import os
 import warnings
 import time
+from astropy.time import Time
 from casatasks import tclean, imfit, imstat, imhead
 
 # make proper directories
@@ -659,8 +660,8 @@ def run_fit_point_source(image_paths, source_free_region, print_results, write_r
     # write logfile
     if write_results: 
         df_results = pd.DataFrame(fit_results)
-        df_save = pd.concat([df_store, df_results], axis=1)
-        df_save.to_csv(logfile_path)    
+        #df_save = pd.concat([df_store, df_results], axis=1)
+        df_results.to_csv(logfile_path)    
 
 def convert_to_fits(image_path, image_prefix, crop_size=128):
 

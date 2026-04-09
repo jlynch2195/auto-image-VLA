@@ -19,6 +19,7 @@ with open("config.yaml", "r") as f:
 # read params from config.yaml
 measurement_set = config["measurement_set"]
 source_name = config["source_name"]
+
 image_size = config["image_size"]
 try_point_source = config["try_point_source"]
 split = config["split"]

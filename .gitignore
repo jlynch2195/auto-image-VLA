@@ -2,5 +2,6 @@ config.yaml
 *.log
 *.tmp
 *.last
+TempLattice*/
 .DS_Store
 .ipynb_checkpoints/

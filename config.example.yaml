@@ -3,13 +3,13 @@ measurement_set: "path/to/data.ms"
 source_name: "target"
 image_size: 512
 
+# if just want to image one band, toggle True and specify band. The "split" param below still applies.
 # for an SED, don't have to change the single-freq params: just make sure use_single_band = FALSE
-# splits are "whole" for one image per band with all spws, "halves" for two images split down spws, or "both" 
-split: "both"
-# single-frequency parameters
-# if just want to image one band, toggle True and specify band. The "split" param from above still applies.
 use_single_band: True
 single_band: "EVLA_X"
+
+# splits are "whole" for one image per band with all spws, "halves" for two images split down spws, or "both" 
+split: "both"
 
 # point source inputs ----------------------------------------------------------------------------------------
 try_point_source: True
@@ -17,7 +17,7 @@ fitting_procedure: "basic"
 # if True, prints results as a dictionary in terminal
 print_results: True
 # if True, writes results as an excel sheet in imfit_files subdirectory
-write_results: True
+write_results: False
 
 # optional imfit params for "advanced" fitting procedure ------------------------------------------------------
 # Specify casa region file or string to use in calculating the near-source RMS. If None, default annulus used.
