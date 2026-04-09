@@ -175,7 +175,7 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
 
     # remove first two spectral windows 
     if not use_single_band:
-        ls = ls[3:]
+        ls = ls[2:]
     
     # get formatting right
     result = []
