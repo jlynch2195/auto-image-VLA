@@ -166,6 +166,10 @@ def scrape_listfile(listfile, source_name, split, use_single_band, single_band):
     
         if (start_epoch <= date0) and (date0 < end_epoch):
             configuration = row["configuration"]
+
+    # if BnA, change to A
+    if configuration == "BnA†":
+        configuration = "A"
     
     # SPECTRAL WINDOWS =================================================
     # determine how many spectral windows there are
