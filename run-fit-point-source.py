@@ -52,7 +52,8 @@ image_paths = [f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.1.25G
 
 
 
-image_paths = ["/Users/jimmylynch/Desktop/radio/observations/25A-060/PS16dtm/2025-07-03/images/25A-060.MJD60859.53818109954.PS16dtm_sci.L_band.cont.selfcal.I.tt0.fits", "/Users/jimmylynch/Desktop/radio/observations/25A-060/PS16dtm/2025-07-03/images/25A-060.MJD60859.53818109954.PS16dtm_sci.S_band.cont.selfcal.I.tt0.fits"]
+image_paths = ["/Users/jimmylynch/Downloads/vlass_cutouts/J110840_+340552_epoch1_60arcsec.fits", "/Users/jimmylynch/Downloads/vlass_cutouts/J110840_+340552_epoch2_60arcsec.fits", "/Users/jimmylynch/Downloads/vlass_cutouts/J110840_+340552_epoch3_60arcsec.fits"]
+
 
 # fitting procedure
 fitting_procedure = "basic"
