@@ -295,9 +295,13 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
     scale = 2.5
     region_fit = f"ellipse[[{x0}pix, {y0}pix], [{scale*bmaj/2}arcsec, {scale*bmin/2}arcsec], {bpa}deg]"
 
+    # get RMS
+    imstat_whole_image = imstat(image_path)
+    input_rms = imstat_whole_image["rms"][0]
+
     # detection
     try: 
-        imfit_results = imfit(imagename=image_path, region=region_fit, estimates="estimates.txt")
+        imfit_results = imfit(imagename=image_path, region=region_fit, estimates="estimates.txt", rms=f"{input_rms}Jy/beam")
         print("fit success")
         flux_det = imfit_results["results"]["component0"]["flux"]["value"][0]
         flux_err_det = imfit_results["results"]["component0"]["flux"]["error"][0]
@@ -308,11 +312,10 @@ def fit_point_source_basic(image_path, print_results=True, write_results=True):
         flux_det = 0
         flux_err_det = 0
 
-    # get RMS
+    # RMS for nondetection
     scale_nondet = 10
-    region_rms = f"ellipse[[{x0}pix, {y0}pix], [{scale*bmaj/2}arcsec, {scale*bmin/2}arcsec], {bpa}deg]"
+    region_rms = f"ellipse[[{x0}pix, {y0}pix], [{scale_nondet*bmaj/2}arcsec, {scale_nondet*bmin/2}arcsec], {bpa}deg]"
     nondetection_imstat_results = imstat(image_path, region=region_rms)
-
     flux_nondet = 3*nondetection_imstat_results["rms"][0]
 
     results_dict = {"Target": target, 
