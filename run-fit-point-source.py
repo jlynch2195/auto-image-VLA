@@ -14,45 +14,14 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, script_dir)
 from helper_functions import fit_point_source, fit_point_source_basic
 
-'''
-prefix = "/Users/jimmylynch/Desktop/radio/observations/20A-492/ASASSN-14ae/final_files"
-image_paths = [f"{prefix}/5.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
-               f"{prefix}/6.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0",
-               f"{prefix}/7.0GHz/Target_ASASSN_14ae_EVLA_C_final.image.tt0"]
-'''
-prefix = "/Users/jimmylynch/Desktop/grace-results/25B-272/AT2023mfm/2025-11-04/final_files"
-image_paths = [f"{prefix}/1.26GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
-               f"{prefix}/1.78GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
-               f"{prefix}/2.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
-               f"{prefix}/3.5GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
-               f"{prefix}/5.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
-               f"{prefix}/7.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
-               f"{prefix}/9.19GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
-               f"{prefix}/11.06GHz/Target_AT2023mfm_EVLA_X_final.image.tt0",
-               f"{prefix}/1.52GHz/Target_AT2023mfm_EVLA_L_final.image.tt0",
-               f"{prefix}/3.0GHz/Target_AT2023mfm_EVLA_S_final.image.tt0",
-               f"{prefix}/6.0GHz/Target_AT2023mfm_EVLA_C_final.image.tt0",
-               f"{prefix}/10.13GHz/Target_AT2023mfm_EVLA_X_final.image.tt0"]
+prefix = "/Users/jimmylynch/Desktop/radio/observations/26A-167/ASASSN-14ae/26A-167.ASASSN14ae.2026-03-15/ASC-images"
 
-'''
-prefix = "/Users/jimmylynch/Desktop/grace-results/24A-322/PS16dtm/2024-09-05/images"
-image_paths = [f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.1.25GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.1.75GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.2.5GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.3.5GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.5.0GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.7.0GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.9.0GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.11.0GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.1.5GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.3.0GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.6.0GHz.2700px.image.tt0",
-               f"{prefix}/24A-322.sb46483418.eb46486767.60558.243236828705.10.0GHz.2700px.image.tt0",]
-'''
-
-
-
-image_paths = ["/Users/jimmylynch/Downloads/vlass_cutouts/J110840_+340552_epoch1_60arcsec.fits", "/Users/jimmylynch/Downloads/vlass_cutouts/J110840_+340552_epoch2_60arcsec.fits", "/Users/jimmylynch/Downloads/vlass_cutouts/J110840_+340552_epoch3_60arcsec.fits"]
+image_paths = [f"{prefix}/26A-167.ASASSN-14ae.2026-03-15.1.26GHz.image.tt0",
+f"{prefix}/26A-167.ASASSN-14ae.2026-03-15.1.52GHz.image.tt0",
+f"{prefix}/26A-167.ASASSN-14ae.2026-03-15.1.78GHz.image.tt0",
+f"{prefix}/26A-167.ASASSN-14ae.2026-03-15.9.19GHz.image.tt0",
+f"{prefix}/26A-167.ASASSN-14ae.2026-03-15.10.13GHz.image.tt0",
+f"{prefix}/26A-167.ASASSN-14ae.2026-03-15.11.06GHz.image.tt0"]
 
 
 # fitting procedure

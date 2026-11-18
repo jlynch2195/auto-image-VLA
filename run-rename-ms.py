@@ -2,7 +2,7 @@ import shutil
 from astropy.time import Time
 
 # path from NRAO archive with messy pipeline numbers etc.
-mspath = "/Users/jimmylynch/Desktop/radio/observations/25A-060/pipeline.61139.014699073974/25A-060.sb48980598.eb49031908.60878.251126539355.ms"
+mspath = "/Users/jimmylynch/Desktop/radio/observations/brendan/26A-381/pipeline.61249.80585648166/26A-381.sb50191410.eb50873068.61218.03272274305.ms"
 
 # This function turns your NRAO formatted mspath (eg, "program/pipeline.61139.014699073974/25A-060.sb48980598.eb49031908.60878.251126539355.ms") to
 # "program/target/program.target.date/program.target.date.ms" which is cleaner and used by the script. If your .ms is already in that format, it will
